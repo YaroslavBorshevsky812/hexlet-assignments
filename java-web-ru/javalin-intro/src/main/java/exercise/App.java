@@ -14,6 +14,7 @@ public final class App {
         });
 
         app.get("/", ctx -> ctx.result("Welcome to Javalin!"));
+        app.get("/welcome", ctx -> ctx.result("Welcome to Hexlet!"));
 
         return app;
         // END
