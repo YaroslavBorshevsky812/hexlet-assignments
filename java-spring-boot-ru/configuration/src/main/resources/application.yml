@@ -1,0 +1,19 @@
+---
+# BEGIN
+# Включаем цветной вывод логов
+spring:
+  output:
+    ansi:
+      enabled: ALWAYS
+
+# Меняем порт приложения на 7070
+server:
+  port: 7070
+# END
+
+users:
+  admins:
+    - gjoinsey1@blogger.com
+    - scrosi4@cam.ac.uk
+    - brundle@cam.ac.uk
+
