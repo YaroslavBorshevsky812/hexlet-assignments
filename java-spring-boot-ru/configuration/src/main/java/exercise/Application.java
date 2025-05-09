@@ -26,12 +26,13 @@ public class Application {
 
     // BEGIN
     @GetMapping("/admins")
-    public List<User> getAdmins() {
+    public List<String> getAdmins() {
         List<String> adminEmails = userInfo.getAdmins();
 
         return users.stream()
                     .filter(user -> adminEmails.contains(user.getEmail()))
                     .sorted(Comparator.comparing(User::getName))
+                    .map(User::getName)
                     .collect(Collectors.toList());
     }
     // END
