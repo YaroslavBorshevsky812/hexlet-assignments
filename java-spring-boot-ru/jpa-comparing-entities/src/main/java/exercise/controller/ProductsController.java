@@ -36,28 +36,33 @@ public class ProductsController {
     @PostMapping(path = "")
     @ResponseStatus(HttpStatus.CREATED)
     public Product create(@RequestBody Product product) {
-        // Валидация входных данных
-        if (product.getTitle() == null || product.getTitle().isBlank()) {
+        // 1. Проверяем, что product не null
+        if (product == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product data cannot be null");
+        }
+
+        // 2. Проверяем обязательные поля
+        if (product.getTitle() == null || product.getTitle().trim().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product title cannot be empty");
         }
+
         if (product.getPrice() <= 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Price must be positive");
         }
 
-        // Проверка на существование товара
-        boolean productExists = productRepository.findAll().stream()
-                                                 .anyMatch(p ->
-                                                               p.getTitle().equalsIgnoreCase(product.getTitle())
-                                                                   && p.getPrice() == product.getPrice()
-                                                 );
-
-        if (productExists) {
-            throw new ResourceAlreadyExistsException(
-                "Product with title '" + product.getTitle() +
-                    "' and price " + product.getPrice() + " already exists"
-            );
+        // 3. Проверяем существование товара (только после валидации полей)
+        List<Product> existingProducts = productRepository.findAll();
+        for (Product existing : existingProducts) {
+            if (existing.getTitle() != null &&
+                existing.getTitle().equalsIgnoreCase(product.getTitle())
+                && existing.getPrice() == product.getPrice()) {
+                throw new ResourceAlreadyExistsException(
+                    "Product with title '" + product.getTitle() +
+                        "' and price " + product.getPrice() + " already exists");
+            }
         }
 
+        // 4. Сохраняем, если все проверки пройдены
         return productRepository.save(product);
     }
     // END
