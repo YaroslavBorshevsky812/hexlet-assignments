@@ -27,18 +27,18 @@ public class Application {
     }
 
     // BEGIN
-    @GetMapping("/pages") // Список страниц
+    @GetMapping("/posts") // Список страниц
     public List<Post> index(@RequestParam(defaultValue = "10") Integer limit) {
         return posts.stream().limit(limit).toList();
     }
 
-    @PostMapping("/pages") // Создание страницы
+    @PostMapping("/posts") // Создание страницы
     public Post create(@RequestBody Post page) {
         posts.add(page);
         return page;
     }
 
-    @GetMapping("/pages/{id}") // Вывод страницы
+    @GetMapping("/posts/{id}") // Вывод страницы
     public Optional<Post> show(@PathVariable String id) {
         var page = posts.stream()
                         .filter(p -> p.getId().equals(id))
@@ -46,7 +46,7 @@ public class Application {
         return page;
     }
 
-    @PutMapping("/pages/{id}") // Обновление страницы
+    @PutMapping("/posts/{id}") // Обновление страницы
     public Post update(@PathVariable String id, @RequestBody Post data) {
         var maybePage = posts.stream()
                              .filter(p -> p.getId().equals(id))
@@ -59,7 +59,7 @@ public class Application {
         return data;
     }
 
-    @DeleteMapping("/pages/{id}") // Удаление страницы
+    @DeleteMapping("/posts/{id}") // Удаление страницы
     public void destroy(@PathVariable String id) {
         posts.removeIf(p -> p.getId().equals(id));
     }
