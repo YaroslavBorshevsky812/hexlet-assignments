@@ -13,6 +13,4 @@ public class Post {
     private String id;
     private String title;
     private String body;
-    private String slug;
-    private String name;
 }

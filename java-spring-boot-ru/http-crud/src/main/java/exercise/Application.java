@@ -41,7 +41,7 @@ public class Application {
     @GetMapping("/pages/{id}") // Вывод страницы
     public Optional<Post> show(@PathVariable String id) {
         var page = posts.stream()
-                        .filter(p -> p.getSlug().equals(id))
+                        .filter(p -> p.getId().equals(id))
                         .findFirst();
         return page;
     }
@@ -49,12 +49,12 @@ public class Application {
     @PutMapping("/pages/{id}") // Обновление страницы
     public Post update(@PathVariable String id, @RequestBody Post data) {
         var maybePage = posts.stream()
-                             .filter(p -> p.getSlug().equals(id))
+                             .filter(p -> p.getId().equals(id))
                              .findFirst();
         if (maybePage.isPresent()) {
             var page = maybePage.get();
-            page.setSlug(data.getSlug());
-            page.setName(data.getName());
+            page.setBody(data.getBody());
+            page.setTitle(data.getTitle());
             page.setBody(data.getBody());
         }
         return data;
@@ -62,7 +62,7 @@ public class Application {
 
     @DeleteMapping("/pages/{id}") // Удаление страницы
     public void destroy(@PathVariable String id) {
-        posts.removeIf(p -> p.getSlug().equals(id));
+        posts.removeIf(p -> p.getId().equals(id));
     }
     // END
 }
