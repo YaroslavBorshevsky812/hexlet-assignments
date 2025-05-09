@@ -23,7 +23,8 @@ class Data {
             var id = "post" + ids.get(i);
             var title = faker.gameOfThrones().house();
             var body = faker.gameOfThrones().quote();
-            var post = new Post(id, title, body);
+            var name = faker.name().toString();
+            var post = new Post(id, title, body, "1", name);
             posts.add(post);
         }
 
