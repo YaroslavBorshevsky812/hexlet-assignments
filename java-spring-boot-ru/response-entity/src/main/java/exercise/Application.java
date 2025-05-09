@@ -68,11 +68,11 @@ public class Application {
     }
 
     @DeleteMapping("/posts/{id}")
-    public ResponseEntity<Void> destroy(@PathVariable String id) {
+    public ResponseEntity<String> destroy(@PathVariable String id) {
         boolean removed = posts.removeIf(p -> p.getId().equals(id));
         return removed
-               ? ResponseEntity.noContent().build()
-               : ResponseEntity.notFound().build();
+               ? ResponseEntity.ok("Post deleted successfully") // 200 OK
+               : ResponseEntity.notFound().build(); // 404 Not Found
     }
     // END
 }
