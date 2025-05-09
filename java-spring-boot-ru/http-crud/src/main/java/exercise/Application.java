@@ -53,7 +53,6 @@ public class Application {
                              .findFirst();
         if (maybePage.isPresent()) {
             var page = maybePage.get();
-            page.setBody(data.getBody());
             page.setTitle(data.getTitle());
             page.setBody(data.getBody());
         }
