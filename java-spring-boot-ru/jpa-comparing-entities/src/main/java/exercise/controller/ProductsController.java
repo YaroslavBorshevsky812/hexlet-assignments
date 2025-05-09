@@ -38,14 +38,16 @@ public class ProductsController {
 
         boolean productExists = productRepository.findAll().stream()
                                                  .anyMatch(p ->
-                                                               p.getTitle().equals(product.getTitle()) &&
-                                                                   p.getPrice() == product.getPrice()
+                                                               p.getTitle().equals(product.getTitle())
+                                                                   && p.getPrice() == product.getPrice()
                                                  );
 
         if (productExists) {
             throw new ResourceAlreadyExistsException(
-                "Product with title '" + product.getTitle() +
-                    "' and price " + product.getPrice() + " already exists"
+                "Product with title '"
+                    + product.getTitle()
+                    + "' and price "
+                    + product.getPrice() + " already exists"
             );
         }
 
