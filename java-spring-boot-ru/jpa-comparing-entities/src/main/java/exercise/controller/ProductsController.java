@@ -18,6 +18,7 @@ import exercise.model.Product;
 import exercise.repository.ProductRepository;
 import exercise.exception.ResourceNotFoundException;
 import exercise.exception.ResourceAlreadyExistsException;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/products")
@@ -35,19 +36,25 @@ public class ProductsController {
     @PostMapping(path = "")
     @ResponseStatus(HttpStatus.CREATED)
     public Product create(@RequestBody Product product) {
+        // Валидация входных данных
+        if (product.getTitle() == null || product.getTitle().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product title cannot be empty");
+        }
+        if (product.getPrice() <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Price must be positive");
+        }
 
+        // Проверка на существование товара
         boolean productExists = productRepository.findAll().stream()
                                                  .anyMatch(p ->
-                                                               p.getTitle().equals(product.getTitle())
+                                                               p.getTitle().equalsIgnoreCase(product.getTitle())
                                                                    && p.getPrice() == product.getPrice()
                                                  );
 
         if (productExists) {
             throw new ResourceAlreadyExistsException(
-                "Product with title '"
-                    + product.getTitle()
-                    + "' and price "
-                    + product.getPrice() + " already exists"
+                "Product with title '" + product.getTitle() +
+                    "' and price " + product.getPrice() + " already exists"
             );
         }
 
@@ -57,16 +64,18 @@ public class ProductsController {
 
     @GetMapping(path = "/{id}")
     public Product show(@PathVariable long id) {
-        var product =  productRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Product with id " + id + " not found"));
+        var product = productRepository.findById(id)
+                                       .orElseThrow(
+                                           () -> new ResourceNotFoundException("Product with id " + id + " not found"));
 
         return product;
     }
 
     @PutMapping(path = "/{id}")
     public Product update(@PathVariable long id, @RequestBody Product productData) {
-        var product =  productRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Product with id " + id + " not found"));
+        var product = productRepository.findById(id)
+                                       .orElseThrow(
+                                           () -> new ResourceNotFoundException("Product with id " + id + " not found"));
 
         product.setTitle(productData.getTitle());
         product.setPrice(productData.getPrice());
