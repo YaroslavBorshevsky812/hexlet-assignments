@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
+
 import java.util.List;
 
 import exercise.repository.ProductRepository;
@@ -40,7 +41,10 @@ public class ProductsController {
     @GetMapping("/{id}")
     public ProductDTO show(@PathVariable long id) {
         var product = productRepository.findById(id)
-                                       .orElseThrow(() -> new ResourceNotFoundException("Product with id " + id + " not found"));
+                                       .orElseThrow(
+                                           () -> new ResourceNotFoundException(
+                                               "Product with id " + id + " not found"
+                                           ));
         return productMapper.map(product);
     }
 
@@ -55,7 +59,10 @@ public class ProductsController {
     @PutMapping("/{id}")
     public ProductDTO update(@PathVariable long id, @RequestBody ProductUpdateDTO productData) {
         var product = productRepository.findById(id)
-                                       .orElseThrow(() -> new ResourceNotFoundException("Product with id " + id + " not found"));
+                                       .orElseThrow(() ->
+                                                        new ResourceNotFoundException(
+                                                            "Product with id " + id + " not found"
+                                                        ));
 
         productMapper.update(productData, product);
         productRepository.save(product);
