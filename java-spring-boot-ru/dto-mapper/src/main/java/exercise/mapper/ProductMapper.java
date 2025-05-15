@@ -27,7 +27,6 @@ public interface ProductMapper {
     @Mapping(target = "vendorCode", source = "barcode")
     ProductDTO map(Product product);
 
-    @Mapping(target = "name", source = "title")
     @Mapping(target = "cost", source = "price")
     void update(ProductUpdateDTO dto, @MappingTarget Product product);
 }
