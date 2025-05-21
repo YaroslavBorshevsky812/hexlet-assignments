@@ -56,37 +56,37 @@ public class User implements BaseEntity, UserDetails {
     // BEGIN
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return new ArrayList<>();
-    }
-
-    @Override
-    public String getUsername() {
-        return email;
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
+        return new ArrayList<>(); // Пустой список ролей/прав
     }
 
     @Override
     public String getPassword() {
-        return passwordDigest;
+        return passwordDigest; // Возвращает хеш пароля
+    }
+
+    @Override
+    public String getUsername() {
+        return email; // В качестве username используем email
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true; // Аккаунт не просрочен
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true; // Аккаунт не заблокирован
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true; // Пароль не просрочен
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true; // Аккаунт включен
     }
     // END
 }

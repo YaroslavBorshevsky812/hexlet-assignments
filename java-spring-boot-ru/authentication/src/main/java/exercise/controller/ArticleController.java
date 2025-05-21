@@ -6,8 +6,6 @@ import exercise.dto.ArticleCreateDTO;
 import exercise.dto.ArticleDTO;
 import exercise.dto.ArticleUpdateDTO;
 import exercise.mapper.ArticleMapper;
-import exercise.model.Article;
-import exercise.model.User;
 import exercise.repository.UserRepository;
 import exercise.utils.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,24 +39,25 @@ public class ArticleController {
     @Autowired
     private UserUtils userUtils;
 
+
     // BEGIN
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
-    public ArticleDTO create(@RequestBody @Valid ArticleCreateDTO articleData) {
+    ArticleDTO create(@RequestBody @Valid ArticleCreateDTO articleData) {
         // Получаем текущего аутентифицированного пользователя
-        User author = userUtils.getCurrentUser();
+        var currentUser = userUtils.getCurrentUser();
 
         // Преобразуем DTO в сущность Article
-        Article article = articleMapper.map(articleData);
+        var article = articleMapper.map(articleData);
 
         // Устанавливаем автора статьи
-        article.setAuthor(author);
+        article.setAuthor(currentUser);
 
-        // Сохраняем статью в базе данных
-        Article savedArticle = articleRepository.save(article);
+        // Сохраняем статью в базе
+        articleRepository.save(article);
 
-        // Преобразуем сохраненную статью обратно в DTO и возвращаем
-        return articleMapper.map(savedArticle);
+        // Возвращаем DTO созданной статьи
+        return articleMapper.map(article);
     }
     // END
 
@@ -67,15 +66,16 @@ public class ArticleController {
         var tasks = articleRepository.findAll();
 
         return tasks.stream()
-                    .map(t -> articleMapper.map(t))
-                    .toList();
+                .map(t -> articleMapper.map(t))
+                .toList();
     }
+
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     ArticleDTO show(@PathVariable Long id) {
         var article = articleRepository.findById(id)
-                                       .orElseThrow(() -> new ResourceNotFoundException("Not Found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Not Found: " + id));
         return articleMapper.map(article);
     }
 
@@ -83,7 +83,7 @@ public class ArticleController {
     @ResponseStatus(HttpStatus.OK)
     ArticleDTO update(@RequestBody @Valid ArticleUpdateDTO articleData, @PathVariable Long id) {
         var article = articleRepository.findById(id)
-                                       .orElseThrow(() -> new ResourceNotFoundException("Not Found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Not Found"));
 
         articleMapper.update(articleData, article);
         articleRepository.save(article);

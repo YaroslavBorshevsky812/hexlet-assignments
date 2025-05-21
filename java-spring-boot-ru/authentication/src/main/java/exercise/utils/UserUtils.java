@@ -15,16 +15,12 @@ public class UserUtils {
     public User getCurrentUser() {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
-            return null;
+            throw new RuntimeException("User not authenticated");
         }
+
         String email = authentication.getName();
         return userRepository.findByEmail(email)
                              .orElseThrow(() -> new RuntimeException("User not found"));
-    }
-
-    public boolean isCurrentUser(User user) {
-        User currentUser = getCurrentUser();
-        return currentUser != null && currentUser.getId() == user.getId();
     }
     // END
 

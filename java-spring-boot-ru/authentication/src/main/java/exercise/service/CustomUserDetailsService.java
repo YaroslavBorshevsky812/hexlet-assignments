@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 // BEGIN
 @Service
 public class CustomUserDetailsService implements UserDetailsManager {
+
     @Autowired
     private UserRepository userRepository;
 
@@ -33,24 +34,25 @@ public class CustomUserDetailsService implements UserDetailsManager {
 
     @Override
     public void updateUser(UserDetails user) {
-        User existingUser = (User) user;
-        userRepository.save(existingUser);
+        User updatedUser = (User) user;
+        userRepository.save(updatedUser);
     }
 
     @Override
-    public void deleteUser(String username) {
-        User user = (User) loadUserByUsername(username);
+    public void deleteUser(String email) {
+        User user = userRepository.findByEmail(email)
+                                  .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         userRepository.delete(user);
     }
 
     @Override
     public void changePassword(String oldPassword, String newPassword) {
-        // Implementation not needed for this exercise
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     @Override
-    public boolean userExists(String username) {
-        return userRepository.findByEmail(username).isPresent();
+    public boolean userExists(String email) {
+        return userRepository.findByEmail(email).isPresent();
     }
 }
 // END
