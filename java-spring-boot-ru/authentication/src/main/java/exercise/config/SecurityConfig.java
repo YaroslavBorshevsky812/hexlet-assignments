@@ -35,12 +35,12 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(
         HttpSecurity http, HandlerMappingIntrospector introspector)
         throws Exception {
-        // По умолчанию все запрещено
         return http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                // Разрешаем доступ только к /api/login, чтобы аутентифицироваться и получить токен
-                .requestMatchers("/api/login", "/users/**").permitAll()
+                // Разрешаем только /api/login без аутентификации
+                .requestMatchers("/api/login").permitAll()
+                // Все остальные запросы требуют аутентификации
                 .anyRequest().authenticated())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .oauth2ResourceServer((rs) -> rs.jwt((jwt) -> jwt.decoder(jwtDecoder)))
@@ -48,6 +48,7 @@ public class SecurityConfig {
             .build();
     }
 
+    // Остальные бины остаются без изменений
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
         return http.getSharedObject(AuthenticationManagerBuilder.class)
