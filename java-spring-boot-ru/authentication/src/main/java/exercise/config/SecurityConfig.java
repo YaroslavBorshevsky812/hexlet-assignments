@@ -4,7 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -14,63 +16,50 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import exercise.service.CustomUserDetailsService;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
 // BEGIN
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-
-    private final JwtDecoder jwtDecoder;
-    private final PasswordEncoder passwordEncoder;
-    private final CustomUserDetailsService userService;
-
-    // Инжектим через конструктор (рекомендуемый способ)
     @Autowired
-    public SecurityConfig(
-        JwtDecoder jwtDecoder,
-        PasswordEncoder passwordEncoder,
-        CustomUserDetailsService userService
-    ) {
-        this.jwtDecoder = jwtDecoder;
-        this.passwordEncoder = passwordEncoder;
-        this.userService = userService;
-    }
+    private JwtDecoder jwtDecoder;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private CustomUserDetailsService userService;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
+    public SecurityFilterChain securityFilterChain(
+        HttpSecurity http, HandlerMappingIntrospector introspector)
+        throws Exception {
+        // По умолчанию все запрещено
+        return http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/login", "/api/users").permitAll()
-                .anyRequest().authenticated()
-            )
-            .sessionManagement(session ->
-                                   session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
-            .oauth2ResourceServer(oauth2 ->
-                                      oauth2.jwt(jwt -> jwt.decoder(jwtDecoder))
-            );
-
-        return http.build();
+                // Разрешаем доступ только к /api/login, чтобы аутентифицироваться и получить токен
+                .requestMatchers("/api/login").permitAll()
+                .anyRequest().authenticated())
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .oauth2ResourceServer((rs) -> rs.jwt((jwt) -> jwt.decoder(jwtDecoder)))
+            .httpBasic(Customizer.withDefaults())
+            .build();
     }
 
     @Bean
-    public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
+        return http.getSharedObject(AuthenticationManagerBuilder.class)
+                   .build();
+    }
+
+    @Bean
+    public AuthenticationProvider daoAuthProvider(AuthenticationManagerBuilder auth) {
+        var provider = new DaoAuthenticationProvider();
         provider.setUserDetailsService(userService);
         provider.setPasswordEncoder(passwordEncoder);
         return provider;
-    }
-
-    // Если не используется, можно удалить
-    @Bean
-    public AuthenticationManager authenticationManager(
-        HttpSecurity http,
-        DaoAuthenticationProvider provider
-    ) throws Exception {
-        return http.getSharedObject(AuthenticationManagerBuilder.class)
-                   .authenticationProvider(provider)
-                   .build();
     }
 }
 // END
