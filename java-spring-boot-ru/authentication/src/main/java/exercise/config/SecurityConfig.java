@@ -20,27 +20,36 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Autowired
-    private JwtDecoder jwtDecoder;
+    private final JwtDecoder jwtDecoder;
+    private final PasswordEncoder passwordEncoder;
+    private final CustomUserDetailsService userService;
 
+    // Инжектим через конструктор (рекомендуемый способ)
     @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private CustomUserDetailsService userService;
+    public SecurityConfig(
+        JwtDecoder jwtDecoder,
+        PasswordEncoder passwordEncoder,
+        CustomUserDetailsService userService
+    ) {
+        this.jwtDecoder = jwtDecoder;
+        this.passwordEncoder = passwordEncoder;
+        this.userService = userService;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/login").permitAll()
-                .requestMatchers("/api/users").permitAll()
-                .anyRequest().authenticated())
+                .requestMatchers("/api/login", "/api/users").permitAll()
+                .anyRequest().authenticated()
+            )
             .sessionManagement(session ->
-                                   session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .oauth2ResourceServer(oauth2 -> oauth2
-                .jwt(jwt -> jwt.decoder(jwtDecoder)));
+                                   session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
+            .oauth2ResourceServer(oauth2 ->
+                                      oauth2.jwt(jwt -> jwt.decoder(jwtDecoder))
+            );
 
         return http.build();
     }
@@ -53,13 +62,14 @@ public class SecurityConfig {
         return provider;
     }
 
+    // Если не используется, можно удалить
     @Bean
     public AuthenticationManager authenticationManager(
         HttpSecurity http,
-        DaoAuthenticationProvider authenticationProvider
+        DaoAuthenticationProvider provider
     ) throws Exception {
         return http.getSharedObject(AuthenticationManagerBuilder.class)
-                   .authenticationProvider(authenticationProvider)
+                   .authenticationProvider(provider)
                    .build();
     }
 }
