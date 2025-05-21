@@ -5,6 +5,7 @@ import java.util.List;
 import exercise.dto.BookCreateDTO;
 import exercise.dto.BookDTO;
 import exercise.dto.BookUpdateDTO;
+import exercise.exception.ResourceNotFoundException;
 import exercise.service.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/books")
@@ -38,12 +40,20 @@ public class BooksController {
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
     public BookDTO create(@Valid @RequestBody BookCreateDTO dto) {
-        return bookService.create(dto);
+        try {
+            return bookService.create(dto);
+        } catch (ResourceNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
     }
 
     @PutMapping("/{id}")
     public BookDTO update(@PathVariable Long id, @Valid @RequestBody BookUpdateDTO dto) {
-        return bookService.update(id, dto);
+        try {
+            return bookService.update(id, dto);
+        } catch (ResourceNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
     }
 
     @DeleteMapping("/{id}")

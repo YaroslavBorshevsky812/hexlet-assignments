@@ -8,7 +8,9 @@ import exercise.mapper.BookMapper;
 import exercise.repository.AuthorRepository;
 import exercise.repository.BookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -37,7 +39,7 @@ public class BookService {
 
     public BookDTO create(BookCreateDTO dto) {
         if (dto.getAuthorId() != null && !authorRepository.existsById(dto.getAuthorId())) {
-            throw new ResourceNotFoundException("Author not found");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Author not found");
         }
         var book = bookMapper.map(dto);
         bookRepository.save(book);
@@ -48,7 +50,7 @@ public class BookService {
         var book = bookRepository.findById(id)
                                  .orElseThrow(() -> new ResourceNotFoundException("Book not found"));
         if (dto.getAuthorId().isPresent() && !authorRepository.existsById(dto.getAuthorId().get())) {
-            throw new ResourceNotFoundException("Author not found");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Author not found");
         }
         bookMapper.update(dto, book);
         bookRepository.save(book);
