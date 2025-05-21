@@ -24,28 +24,40 @@ import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 public class SecurityConfig {
 
     @Autowired
-    private CustomUserDetailsService userDetailsService;
+    private JwtDecoder jwtDecoder;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private JwtDecoder jwtDecoder;
+    private CustomUserDetailsService userService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(
-        HttpSecurity http, HandlerMappingIntrospector introspector
-    )
-        throws Exception {
-        return http
+        HttpSecurity http, HandlerMappingIntrospector introspector) throws Exception {
+        http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
+                // Разрешаем без аутентификации
                 .requestMatchers("/api/login").permitAll()
+                .requestMatchers("/api/users").permitAll() // регистрация
+                // Все остальные запросы требуют аутентификации
                 .anyRequest().authenticated())
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .oauth2ResourceServer((rs) -> rs.jwt((jwt) -> jwt.decoder(jwtDecoder)))
-            .httpBasic(Customizer.withDefaults())
-            .build();
+            .sessionManagement(session ->
+                                   session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .oauth2ResourceServer(oauth2 -> oauth2
+                .jwt(jwt -> jwt.decoder(jwtDecoder)))
+                .httpBasic(Customizer.withDefaults());
+
+        return http.build();
+    }
+
+    @Bean
+    public DaoAuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userService);
+        provider.setPasswordEncoder(passwordEncoder);
+        return provider;
     }
 
     @Bean
@@ -57,7 +69,7 @@ public class SecurityConfig {
     @Bean
     public AuthenticationProvider daoAuthProvider(AuthenticationManagerBuilder auth) {
         var provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService);
+        provider.setUserDetailsService(userService);
         provider.setPasswordEncoder(passwordEncoder);
         return provider;
     }
